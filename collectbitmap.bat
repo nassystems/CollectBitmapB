@@ -1,18 +1,18 @@
 @start powershell.exe -windowstyle hidden -noprofile "$me = '%~f0';. ([scriptblock]::create((gc -li $me|select -skip 1|out-string)))" %*&goto:eof
 <#
 .SYNOPSIS
-クリップボードを監視し、ビットマップ画像がコピーされたときに自動的に保存します。
+Monitors the clipboard and automatically saves bitmap images when they are copied.
 .DESCRIPTION
-クリップボードを監視し、ビットマップ画像がコピーされたときに自動的に保存します。
-画像の保存先は、既定ではスクリプト ファイルと同じフォルダーに保存されます。スクリプト実行時の引数で指定するか、XML 設定ファイルで保存先を指定できます。XML 設定ファイルについては、-Full を指定してヘルプを表示してください。
+Monitors the clipboard and automatically saves bitmap images when they are copied.
+By default, images are saved in the same folder as the script file. The destination can be specified as an argument when executing the script or in the XML configuration file; for help on the XML configuration file, specify -Full.
 
-「テキスト」と「画像」の両方を含むデータがコピーされたときは、保存しません。
-例えば Excel でセルをコピーしたとき、テキストの描かれた図がコピーされますが、同時に書式付きテキストや書式なしテキスト、Excel 形式のセル参照などもコピーされ、貼り付けする側はそれぞれの形式のデータを取り出することができます。
-このように、「画像」と「テキスト」の両方を含む情報は保存しません。
-また、ベクトル図（メタファイル形式）も保存しません。
+When data containing both "text" and "images" is copied, it is not saved.
+For example, when you copy a cell in Excel, a diagram with text is copied, but at the same time, formatted text, unformatted text, and Excel-style cell references are also copied, allowing the pasting party to retrieve the data in each format.
+Thus, information containing both "images" and "text" will not be saved.
+It also does not save vector diagrams (metafile format).
 
-collectbitmap.ps1xml ファイルを作成し、動作をカスタマイズできます。
-PS1XML 定義ファイルは、例えば PowerShell にて次の要領で作成できます。
+You can create a collectbitmap.ps1xml file and customize its behavior.
+PS1XML definition files can be created in PowerShell, for example, as follows;
 PS> @{
 >> SavePath = {Split-Path $me -Parent}
 >> FileName = {'{1:yyyyMMdd_HHmmssff}_{0}.png' -f $env:COMPUTERNAME, $captureddatetime}
@@ -21,15 +21,15 @@ PS> @{
 >> PrintingSize   = 75
 >> PrintingString = {"{1:d} {1:HH:mm:ss.ff}`r`n{0}" -f $env:COMPUTERNAME, $captureddatetime}
 >> } | Export-CliXml collectbitmap.ps1xml
-SavePath には保存先フォルダーを返すスクリプト ブロックを指定します。これは起動時に一度だけ評価されます。
-FileName には保存する画像ファイル名を返すスクリプト ブロックを指定します。これは図を保存する毎に評価されます。
-いずれかの値を省略することもできます。省略した値はスクリプトの規定値が用いられます。
+SavePath specifies a script block that returns a destination folder. This is evaluated only once at startup.
+FileName is a script block that returns the name of the image file to be saved. This is evaluated each time a diagram is saved.
+Any of the values may be omitted. If any of the values are omitted, the script's default values are used.
 .NOTES
-Bitmap collector batch version 1.00
+Bitmap collector batch version 1.01
 
 MIT License
 
-Copyright (c) 2023 Isao Sato
+Copyright (c) 2023-2024 Isao Sato
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -73,7 +73,7 @@ filter Verify-AuthenticodeSignature([Parameter(Mandatory=$true, ValueFromPipelin
     $cert = Get-AuthenticodeSignature -LiteralPath $LiteralPath
     
     if($cert -eq $null) {
-        throw (New-Object System.ArgumentException ('ファイル {0} はデジタル署名を検証できません。。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException))
+        throw (New-Object System.ArgumentException ('File {0} cannot verify the digital signature.。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException))
     }
     
     switch($cert) {
@@ -86,21 +86,21 @@ filter Verify-AuthenticodeSignature([Parameter(Mandatory=$true, ValueFromPipelin
                 } elseif((Test-Path (Join-Path cert:\CurrentUser\TrustedPublisher ($cert.SignerCertificate.Thumbprint)))) {
                     $Result = $true
                 } else {
-                    $exception = New-Object System.Management.Automation.PSSecurityException ('ファイル {0} のデジタル署名の発行元は信頼されてません。このスクリプトはシステムで実行されません。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+                    $exception = New-Object System.Management.Automation.PSSecurityException ('The issuer of the digital signature for file {0} is not trusted. This script will not be executed on the system.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
                 }
             }
         }
         {$cert.Status -eq [System.Management.Automation.SignatureStatus]::NotSigned} {
-            $exception = New-Object System.Management.Automation.PSSecurityException ('ファイル {0} はデジタル署名されていません。このスクリプトはシステムで実行されません。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+            $exception = New-Object System.Management.Automation.PSSecurityException ('File {0} is not digitally signed. This script will not be executed on the system.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
         }
         {$cert.Status -eq [System.Management.Automation.SignatureStatus]::UnknownError} {
-            $exception = New-Object System.ArgumentException ('ファイル {0} はデジタル署名を検証できません。。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+            $exception = New-Object System.ArgumentException ('File {0} cannot verify digital signature.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
         }
         {$cert.Status -eq [System.Management.Automation.SignatureStatus]::NotSupportedFileFormat} {
-            $exception = New-Object System.ArgumentException ('ファイル {0} はデジタル署名を検証できません。。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+            $exception = New-Object System.ArgumentException ('File {0} cannot verify digital signature.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
         }
         default {
-            $exception = New-Object System.Management.Automation.PSSecurityException ('ファイル {0} はデジタル署名されていますが無効です。このスクリプトはシステムで実行されません。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+            $exception = New-Object System.Management.Automation.PSSecurityException ('File {0} is digitally signed but invalid. This script will not run on the system.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
         }
     }
     if(-not ($exception -eq $null -or $Force)) {
@@ -122,6 +122,8 @@ filter Verify-ScriptExecution([Parameter(Mandatory=$true, ValueFromPipeline=$tru
         {$_ -eq [Microsoft.PowerShell.ExecutionPolicy]::RemoteSigned} {
             if(([uri] $LiteralPath).IsUnc) {
                 Verify-AuthenticodeSignature $LiteralPath -Force:$Force
+            } else {
+                $true
             }
         }
         {$_ -eq [Microsoft.PowerShell.ExecutionPolicy]::AllSigned} {
@@ -129,7 +131,7 @@ filter Verify-ScriptExecution([Parameter(Mandatory=$true, ValueFromPipeline=$tru
         }
         default {
             if(-not $Force) {
-                throw New-Object System.Management.Automation.PSSecurityException ('スクリプトの実行がシステムで無効になっているため、ファイル {0} を読み込めません。' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
+                throw New-Object System.Management.Automation.PSSecurityException ('Cannot read file {0} because script execution is disabled on your system.' -f $LiteralPath), (New-Object System.UnauthorizedAccessException)
             }
             $false
         }
@@ -219,7 +221,7 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
             
             $mimetype = "image/png"
             $encparams = $null
-            # 画質80/100の JPEG 画像にする場合の例
+            # Example of a JPEG image with 80/100 image quality.
             # $mimetype = "image/jpeg"
             # $encparams = New-Object System.Drawing.Imaging.EncoderParameters -ArgumentList 1
             # $encparams.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter -ArgumentList @([System.Drawing.Imaging.Encoder]::Quality, [System.Int64] 80)
@@ -237,13 +239,13 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
     # main
     
     $check = New-Object System.Windows.Forms.CheckBox
-    $check.Text = 'テキスト情報をプリントする'
+    $check.Text = 'Print informations.'
     $check.Dock = [System.Windows.Forms.DockStyle]::Top
     $check.BackColor = [System.Drawing.Color]::Transparent
     $check.Checked = $xconf['Printing']
     
     $label = New-Object System.Windows.Forms.Label
-    $label.Text = "コピーしたビットマップ画像を保存します。`n保存先：`n" +$xconf['SavePath']
+    $label.Text = "Save the copied bitmap image.`ndestination:`n" +$xconf['SavePath']
     $label.Dock = [System.Windows.Forms.DockStyle]::Fill
     $label.BackColor = [System.Drawing.Color]::Transparent
     
@@ -255,7 +257,7 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
     $pict.Controls.Add($label)
     
     $watcher = New-Object ClipboardWatcher
-    $watcher.Text = "ビットマップ収集"
+    $watcher.Text = "collect bitmap"
     $watcher.Controls.Add($pict)
     $watcher.Add_ClipboardChanged(${function:Watch-Clipboard_OnClipboardChanged})
     
@@ -293,7 +295,7 @@ if([psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators'):
                 }
                 catch
                 {
-                    // 例外時は AddClipboardFormatListener が存在しなかった（≒ NT60 以前）と仮定する。
+                    // Assume that AddClipboardFormatListener did not exist at the time of the exception (= earlier than NT60).
                     nextHandle = SetClipboardViewer(this.Handle);
                 }
             }
@@ -306,7 +308,7 @@ if([psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators'):
                 }
                 catch
                 {
-                    // 例外時は RemoveClipboardFormatListener が存在しなかった（≒ NT60 以前）と仮定する。
+                    // Assume that RemoveClipboardFormatListener did not exist at the time of the exception (= earlier than NT60).
                     bool sts = ChangeClipboardChain(this.Handle, nextHandle);
                 }
             }
@@ -388,8 +390,6 @@ if([psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators'):
 # entry
 ################################
 
-# スクリプト ファイルと同名の PS1XML ファイルがあったら読み込む
-# 設定ファイルが存在しない場合、空の構成情報を構築する。
 [System.IO.Path]::ChangeExtension($me, '.ps1xml') |% {
     if(Test-Path $_) {
         Verify-ScriptExecution $_ | Out-Null
@@ -399,7 +399,6 @@ if([psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators'):
     }
 }
 
-# $xconf の未定義の各要素に既定の構成情報を構築する。
 if($null -eq $xconf['SavePath']) {
     $xconf['SavePath'] = {Split-Path $me -Parent}
 }
@@ -425,17 +424,14 @@ if($null -eq $xconf['Printing']) {
 }
 
 
-# 保存先パスを解決する
 if($null -eq $SaveFolder -or [string]::IsNullOrEmpty($SaveFolder.ToString())) {
     $xconf['SavePath'] = Invoke-Command ([scriptblock]::Create($xconf['SavePath']))
 } else {
     $xconf['SavePath'] = $SaveFolder.ToString()
 }
 
-$xconf['SavePath'] |? {-not(Test-Path $_)} |% {mkdir $_} |% {'保存先 {0} を作成しました。' -f $_.FullName}
+$xconf['SavePath'] |? {-not(Test-Path $_)} |% {mkdir $_} | Out-Null
 
-# 主論理呼び出し
-# STA の実行環境を構築して主論理を呼び出す。
 
 $is = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $is.ApartmentState = [System.Threading.ApartmentState]::STA
