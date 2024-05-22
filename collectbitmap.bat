@@ -54,7 +54,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ################################################################
 # bitmap collector batch
 ################################
-# 2023/12/22
+# 2024/05/22
 ################################################################
 
 param($SaveFolder)
@@ -245,7 +245,7 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
     $check.Checked = $xconf['Printing']
     
     $label = New-Object System.Windows.Forms.Label
-    $label.Text = "Save the copied bitmap image.`ndestination:`n" +$xconf['SavePath']
+    $label.Text = "Save the copied bitmap to:`n" +$xconf['SavePath']
     $label.Dock = [System.Windows.Forms.DockStyle]::Fill
     $label.BackColor = [System.Drawing.Color]::Transparent
     
@@ -253,8 +253,8 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
     $pict.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
     $pict.Dock = [System.Windows.Forms.DockStyle]::Fill
     
-    $pict.Controls.Add($check)
     $pict.Controls.Add($label)
+    $pict.Controls.Add($check)
     
     $watcher = New-Object ClipboardWatcher
     $watcher.Text = "collect bitmap"
