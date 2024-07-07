@@ -25,7 +25,7 @@ SavePath specifies a script block that returns a destination folder. This is eva
 FileName is a script block that returns the name of the image file to be saved. This is evaluated each time a diagram is saved.
 Any of the values may be omitted. If any of the values are omitted, the script's default values are used.
 .NOTES
-Bitmap collector batch version 1.01
+Bitmap collector batch version 1.05
 
 MIT License
 
@@ -54,7 +54,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ################################################################
 # bitmap collector batch
 ################################
-# 2024/05/22
+# 2024/07/06
 ################################################################
 
 param($SaveFolder)
@@ -177,8 +177,6 @@ function private:Enter-BitmapCapture([System.Collections.Hashtable] $xconf) {
             if($check.Checked) {
                 $printingstring = (Invoke-Command ([scriptblock]::Create($xconf['PrintingString'])))
                 $fontsize = $xconf['PrintingSize']
-                # $fontsize = [Math]::Min($fontsize, $pict.Image.Width /15)
-                # $fontsize = [Math]::Min($fontsize, $pict.Image.Height /3)
                 $grp = $null
                 $fontfamily = $null
                 $font = $null
@@ -292,6 +290,7 @@ if([psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators'):
                 try
                 {
                     AddClipboardFormatListener(this.Handle);
+                    RaiseClipboardChanged();
                 }
                 catch
                 {
